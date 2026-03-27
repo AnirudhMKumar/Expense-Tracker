@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Transaction, Category } from '@/types'
 import TransactionForm from '@/components/transactions/TransactionForm'
 import TransactionList from '@/components/transactions/TransactionList'
-import { Plus, Search, FilterX } from 'lucide-react'
+import { Plus, Search, FilterX, Download } from 'lucide-react'
 
 import { 
   Select, 
@@ -124,6 +124,32 @@ export default function TransactionsPage() {
     }
   }
 
+  const handleExport = async () => {
+    try {
+      const params = new URLSearchParams()
+      if (filters.type !== 'all') params.append('type', filters.type)
+      if (filters.categoryId !== 'all') params.append('categoryId', filters.categoryId)
+      if (filters.startDate) params.append('startDate', filters.startDate)
+      if (filters.endDate) params.append('endDate', filters.endDate)
+      if (filters.search) params.append('search', filters.search)
+      params.append('export', 'csv')
+
+      const res = await fetch(`/api/transactions?${params.toString()}`)
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'transactions.csv'
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      toast.success("Transactions exported successfully")
+    } catch {
+      toast.error("Failed to export transactions")
+    }
+  }
+
   const resetFilters = () => {
     setFilters({
       type: 'all',
@@ -147,6 +173,14 @@ export default function TransactionsPage() {
         >
           <Plus size={20} />
           Add Transaction
+        </Button>
+        <Button
+          onClick={handleExport}
+          variant="outline"
+          className="w-full md:w-auto gap-2 shadow-sm"
+        >
+          <Download size={20} />
+          Export CSV
         </Button>
       </div>
 
