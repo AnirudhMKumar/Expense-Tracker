@@ -37,7 +37,7 @@ export default function TransactionsPage() {
     try {
       const res = await fetch('/api/categories')
       const data = await res.json()
-      setCategories(data)
+      setCategories(data.categories)
     } catch {
       toast.error("Failed to load categories")
     }

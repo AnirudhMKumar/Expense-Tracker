@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { getCurrencySymbol } from '@/lib/utils'
 
 const formSchema = z.object({
   amount: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
@@ -108,7 +109,7 @@ export default function BudgetForm({ categories, budget, initialMonth, initialYe
                   <FormLabel>Budget Amount</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{getCurrencySymbol()}</span>
                       <Input placeholder="0.00" className="pl-7" {...field} type="number" step="0.01" />
                     </div>
                   </FormControl>

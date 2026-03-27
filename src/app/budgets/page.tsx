@@ -26,9 +26,9 @@ export default function BudgetsPage() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch('/api/categories?type=expense')
+      const res = await fetch('/api/categories?type=expense&limit=100')
       const data = await res.json()
-      setCategories(data)
+      setCategories(data.categories)
     } catch {
       toast.error("Failed to load categories")
     }

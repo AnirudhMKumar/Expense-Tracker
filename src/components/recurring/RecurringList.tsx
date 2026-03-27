@@ -9,6 +9,7 @@ import {
   TableRow 
 } from "@/components/ui/table"
 import { Edit, Trash2, Play, Pause } from 'lucide-react'
+import { getCurrencySymbol } from '@/lib/utils'
 
 type Props = {
   recurring: RecurringTransaction[]
@@ -42,7 +43,7 @@ export default function RecurringList({ recurring, onEdit, onDelete, onToggle }:
           recurring.map((r) => (
             <TableRow key={r.id}>
               <TableCell className="font-medium">{r.category.name}</TableCell>
-              <TableCell>₹{r.amount.toFixed(2)}</TableCell>
+              <TableCell>{getCurrencySymbol()}{r.amount.toFixed(2)}</TableCell>
               <TableCell>
                 <span className={r.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}>
                   {r.type}
