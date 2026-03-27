@@ -10,10 +10,6 @@ export async function GET(request: Request) {
     const endDate = searchParams.get('endDate')
     const search = searchParams.get('search')
 
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
-    const skip = (page - 1) * limit
-
     const where: Record<string, unknown> = {}
     
     if (type) where.type = type
@@ -27,6 +23,29 @@ export async function GET(request: Request) {
     if (search) {
       where.description = { contains: search }
     }
+
+    const exportFormat = searchParams.get('export')
+    if (exportFormat === 'csv') {
+      const transactions = await prisma.transaction.findMany({
+        where,
+        include: { category: true },
+        orderBy: { date: 'desc' },
+      })
+      const csvHeader = 'Date,Type,Amount,Category,Description\n'
+      const csvRows = transactions.map(t => 
+        `${t.date},${t.type},${t.amount},${t.category.name},"${t.description || ''}"`
+      ).join('\n')
+      return new NextResponse(csvHeader + csvRows, {
+        headers: {
+          'Content-Type': 'text/csv',
+          'Content-Disposition': 'attachment; filename="transactions.csv"',
+        },
+      })
+    }
+
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const skip = (page - 1) * limit
 
     const [transactions, total] = await Promise.all([
       prisma.transaction.findMany({
