@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Category {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  icon        String?
+  color       String?
+  type        String        @default("expense")
+  transactions Transaction[]
+  recurringTransactions RecurringTransaction[]
+  budgets     Budget[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Transaction {
+  id          String    @id @default(uuid())
+  amount      Float
+  description String?
+  type        String
+  date        DateTime  @default(now())
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model RecurringTransaction {
+  id          String   @id @default(uuid())
+  amount      Float
+  description String?
+  type        String
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  frequency   String   @default("monthly")
+  customDays  String?
+  dayOfMonth  Int?
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean  @default(true)
+  lastCreated DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Budget {
+  id          String   @id @default(uuid())
+  amount      Float
+  month       Int
+  year        Int
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([month, year, categoryId])
+}
