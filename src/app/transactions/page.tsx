@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Transaction, Category } from '@/types'
 import TransactionForm from '@/components/transactions/TransactionForm'
 import TransactionList from '@/components/transactions/TransactionList'
-import { Plus, Search, FilterX, Download } from 'lucide-react'
+import { Plus, Search, FilterX, Download, Upload } from 'lucide-react'
 
 import { 
   Select, 
@@ -150,6 +150,37 @@ export default function TransactionsPage() {
     }
   }
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/transactions', {
+        method: 'PUT',
+        body: formData,
+      })
+
+      const result = await res.json()
+      if (res.ok) {
+        toast.success(`Imported ${result.imported} transactions`)
+        fetchTransactions()
+      } else {
+        toast.error(result.error || 'Import failed')
+      }
+    } catch {
+      toast.error("Failed to import transactions")
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const resetFilters = () => {
     setFilters({
       type: 'all',
@@ -167,6 +198,13 @@ export default function TransactionsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
           <p className="text-muted-foreground mt-1">Manage and track your spending</p>
         </div>
+        <input
+          type="file"
+          accept=".csv"
+          ref={fileInputRef}
+          onChange={handleImport}
+          className="hidden"
+        />
         <Button
           onClick={() => setShowForm(true)}
           className="w-full md:w-auto gap-2 shadow-sm"
@@ -181,6 +219,14 @@ export default function TransactionsPage() {
         >
           <Download size={20} />
           Export CSV
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full md:w-auto gap-2 shadow-sm"
+        >
+          <Upload size={20} />
+          Import CSV
         </Button>
       </div>
 
